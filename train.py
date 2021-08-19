@@ -6,7 +6,6 @@ import os
 import numpy as np
 from sklearn.model_selection import train_test_split
 from tensorflow import config
-from sklearn.preprocessing import MinMaxScaler
 
 gpus = config.experimental.list_physical_devices('GPU') 
 config.experimental.set_memory_growth(gpus[0], True)
@@ -22,8 +21,7 @@ bilder = np.array(bilder)
 
 bilder = bilder.reshape(bilder.shape[0],bilder.shape[1],bilder.shape[2],bilder.shape[3],1)
 
-scaler = MinMaxScaler()
-bilder = scaler.fit_transform(bilder)
+bilder = bilder.astype('float32') / 255
 
 labels = np.load("data/frame_labels_ped2.npy")
 
@@ -39,10 +37,10 @@ model.add(keras.layers.Conv3D(input_shape =(240, 360, 3, 1),activation="relu",fi
 model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
 model.add(keras.layers.BatchNormalization())
 
-model.add(keras.layers.Conv3D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv3D(activation="relu",filters=128,kernel_size=3,padding="same"))
 model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
 
-model.add(keras.layers.Conv3D(activation="relu",filters=128,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv3D(activation="relu",filters=128,kernel_size=2,padding="same"))
 model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
 
 model.add(keras.layers.Flatten())
