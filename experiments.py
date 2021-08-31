@@ -1,6 +1,6 @@
 #from sklearn import metrics, model_selection
 #from sklearn import metrics
-from tensorflow.keras.layers import Dense,Conv3D,MaxPooling3D,BatchNormalization,Flatten,Input, Add
+""" from tensorflow.keras.layers import Dense,Conv3D,MaxPooling3D,BatchNormalization,Flatten,Input, Add
 from tensorflow.keras.models import Model , Sequential
 from tensorflow import config
 from tensorflow.python.keras.layers.pooling import GlobalAveragePooling3D
@@ -32,7 +32,7 @@ model.add(Dense(1,activation="sigmoid"))
 model.compile(metrics=["binary_accuracy","AUC","Precision"],loss=keras.losses.BinaryCrossentropy)
 model.summary()
 from tensorflow.keras.utils import plot_model
-plot_model(model,show_shapes=True)
+plot_model(model,show_shapes=True) """
 
 """ input = Input((240,360,3,1))
 
@@ -71,3 +71,5 @@ model.compile()
 model.summary()
 from tensorflow.keras.utils import plot_model
 plot_model(model,show_shapes=True) """
+
+
