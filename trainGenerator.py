@@ -17,19 +17,19 @@ gpus = config.experimental.list_physical_devices('GPU')
 config.experimental.set_memory_growth(gpus[0], True)
 
 bilder = list()
-for folder in os.listdir("data\ped2//testing//frames"):
-    path = os.path.join("data\ped2//testing//frames",folder)
+for folder in os.listdir("data//avenue//testing//frames"):
+    path = os.path.join("data//avenue//testing//frames",folder)
     for img in os.listdir(path):
         bild = os.path.join(path,img)
         bilder.append(bild)
 
-labels = np.load("data/frame_labels_ped2_2.npy")
-
+labels = np.load("data/frame_labels_avenue.npy")
+labels = np.reshape(labels,labels.shape[1])
 X_train, X_test, Y_train, Y_test = train_test_split(bilder,labels,test_size=0.2, random_state= 100)
 
 for i in range(len(X_test)):
     X_test[i] = cv2.imread(X_test[i])
-    X_test[i] = cv2.resize(X_test[i],(240,360))
+    X_test[i] = cv2.resize(X_test[i],(360 ,240))
 X_test = np.array(X_test)
 #X_test =  X_test.reshape(X_test.shape[0],X_test.shape[1],X_test.shape[2],X_test.shape[3],1)
 X_test = X_test.astype('float32') / 255
@@ -43,7 +43,7 @@ def data_generator():
             y_output = []
             for j in range(len(batch_samples)):
                 bild = cv2.imread(batch_samples[j])
-                bild = cv2.resize(bild,(240,360))
+                bild = cv2.resize(bild,(360,240))
                 x_input.append(bild)
                 y_output.append(batch_labels[j])
             x_input = np.array(x_input)
@@ -109,8 +109,8 @@ callbacks = [keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, mode=
 genObject = data_generator()
 model.fit(genObject,verbose=1,epochs=50,steps_per_epoch=steps,callbacks=callbacks,validation_data=(X_test,Y_test))
 
-model.save("modelGen1.h5")
-reconstructed_model = keras.models.load_model("modelGen1.h5")
+model.save("modelGen2.h5")
+reconstructed_model = keras.models.load_model("modelGen2.h5")
 
 np.testing.assert_allclose(model.predict(X_test), reconstructed_model.predict(X_test))
 np.testing.assert_allclose(model.evaluate(X_test,Y_test,batch_size=batch_size), reconstructed_model.evaluate(X_test,Y_test,batch_size=batch_size))
