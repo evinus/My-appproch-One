@@ -23,28 +23,52 @@ for folder in os.listdir("data\ped2//testing//frames"):
         bild = os.path.join(path,img)
         bilder.append(bild)
 
-
-
-
-batch_size = 64
-
 labels = np.load("data/frame_labels_ped2_2.npy")
-
-#labels = np.reshape(labels,labels.shape[1])
 
 X_train, X_test, Y_train, Y_test = train_test_split(bilder,labels,test_size=0.2, random_state= 100)
 
-bildData = list()
+for i in range(len(X_test)):
+    X_test[i] = cv2.imread(X_test[i])
+    X_test[i] = cv2.resize(X_test[i],(240,360))
+X_test = np.array(X_test)
+#X_test =  X_test.reshape(X_test.shape[0],X_test.shape[1],X_test.shape[2],X_test.shape[3],1)
+X_test = X_test.astype('float32') / 255
+
+def data_generator():
+    while 1:
+        for i in range(0,len(X_train),batch_size):
+            batch_samples = X_train[i:i+batch_size]
+            batch_labels = Y_train[i:i+batch_size]
+            x_input = []
+            y_output = []
+            for j in range(len(batch_samples)):
+                bild = cv2.imread(batch_samples[j])
+                bild = cv2.resize(bild,(240,360))
+                x_input.append(bild)
+                y_output.append(batch_labels[j])
+            x_input = np.array(x_input)
+            #x_input = x_input.reshape(x_input.shape[0],x_input.shape[1],x_input.shape[2],x_input.shape[3],1)
+            x_input = x_input.astype('float32') / 255
+            y_output = np.array(y_output)
+            yield x_input, y_output
+
+batch_size = 32
+
+#var1, var2 = data_generator()
+#labels = np.reshape(labels,labels.shape[1])
+
+
+""" bildData = list()
 for bild in X_test:
     bildData.append(cv2.imread(bild))
 
 bildData = np.array(bildData)
-X_test = bildData
+X_test = bildData """
 
-nb_train_samples = len(Y_train)
+#nb_train_samples = len(Y_train)
 
 
-df = pd.DataFrame(data={"x_col":X_train,"y_col":Y_train})#columns=(["x_col","y_col"]))
+""" df = pd.DataFrame(data={"x_col":X_train,"y_col":Y_train})#columns=(["x_col","y_col"]))
 df["y_col"] = df["y_col"].astype(str)
 
 
@@ -54,11 +78,11 @@ train_get = dataget.flow_from_dataframe(dataframe=df,x_col="x_col",y_col="y_col"
 if K.image_data_format() == 'channels_first':
     input_shape = (3,240, 360)
 else:
-    input_shape = (240, 360, 3)
+    input_shape = (240, 360, 3) """
 
 model = keras.Sequential()
 
-model.add(keras.layers.Conv2D(input_shape =input_shape,activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(input_shape =(240, 360, 3),activation="relu",filters=64,kernel_size=3,padding="same"))
 model.add(keras.layers.MaxPooling2D(pool_size=(2,2)))
 model.add(keras.layers.BatchNormalization())
 
@@ -76,14 +100,14 @@ model.add(keras.layers.Dense(10,activation="relu"))
 model.add(keras.layers.Dense(1,activation="sigmoid"))
 
 metrics = [keras.metrics.categorical_crossentropy,keras.metrics.Accuracy,keras.metrics.Precision,met.f1_m]
-
+steps = len(X_train) / batch_size
 #model.compile(optimizer="adam",metrics=["acc",met.f1_m,met.precision_m,met.recall_m],loss="binary_crossentropy")
-model.compile(optimizer="rmsprop",metrics=["binary_accuracy","AUC","Precision","Recall"],loss="binary_crossentropy")
+model.compile(optimizer="adam",metrics=["binary_accuracy","AUC","Precision","Recall"],loss="binary_crossentropy")
 model.summary()
 filepath = filepath = 'model2-ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5'
-callbacks = [keras.callbacks.EarlyStopping(monitor="val_auc", patience=5, mode="max")]#,keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')]
-
-model.fit(train_get,batch_size=batch_size,verbose=1,epochs=50,steps_per_epoch=nb_train_samples // batch_size,callbacks=callbacks,validation_data=(X_test,Y_test))
+callbacks = [keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, mode="min")]#,keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')]
+genObject = data_generator()
+model.fit(genObject,verbose=1,epochs=50,steps_per_epoch=steps,callbacks=callbacks,validation_data=(X_test,Y_test))
 
 model.save("modelGen1.h5")
 reconstructed_model = keras.models.load_model("modelGen1.h5")
