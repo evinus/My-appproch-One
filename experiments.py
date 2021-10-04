@@ -1,6 +1,10 @@
-#from sklearn import metrics, model_selection
-#from sklearn import metrics
-""" from tensorflow.keras.layers import Dense,Conv3D,MaxPooling3D,BatchNormalization,Flatten,Input, Add
+
+
+
+""" 
+from sklearn import metrics, model_selection
+from sklearn import metrics
+from tensorflow.keras.layers import Dense,Conv3D,MaxPooling3D,BatchNormalization,Flatten,Input, Add
 from tensorflow.keras.models import Model , Sequential
 from tensorflow import config
 from tensorflow.python.keras.layers.pooling import GlobalAveragePooling3D
@@ -32,9 +36,9 @@ model.add(Dense(1,activation="sigmoid"))
 model.compile(metrics=["binary_accuracy","AUC","Precision"],loss=keras.losses.BinaryCrossentropy)
 model.summary()
 from tensorflow.keras.utils import plot_model
-plot_model(model,show_shapes=True) """
+plot_model(model,show_shapes=True)
 
-""" input = Input((240,360,3,1))
+input = Input((240,360,3,1))
 
 x = Conv3D(64,3,padding="same")(input)
 x = MaxPooling3D(pool_size=(3,3,3))(x)
@@ -54,9 +58,9 @@ model = Model(inputs = input,outputs = x)
 model.compile()
 model.summary()
 from tensorflow.keras.utils import plot_model
-plot_model(model,show_shapes=True) """
+plot_model(model,show_shapes=True)
 
-""" 
+
 model = Sequential()
 
 
@@ -70,6 +74,55 @@ model.add(Dense(1))
 model.compile()
 model.summary()
 from tensorflow.keras.utils import plot_model
-plot_model(model,show_shapes=True) """
+plot_model(model,show_shapes=True)
 
+import cv2 
+import numpy as np 
+import os
+from pathlib import *
+
+path = "data/UFC"
+
+films = list()
+files = (x for x in Path(path).iterdir() if x.is_file())
+for file in files:
+    namn = str(file.name).split("_")[0]
+    if(namn == "Normal"):
+        namn = str(file.name).split("_")[0:2]
+        namn = namn[0] + "_" + namn[1]
+    #print(str(file.name).split("_")[0], "is a file!")
+    films.append(namn)
+
+with open('data//UCFCrime2Local//UCFCrime2Local//Test_split_AD.txt') as f:
+    lines = f.readlines()
+
+for x in range(len(lines)):
+    hittade = False
+    for j in range(len(lines)):
+        if hittade is False and lines[x].strip() == films[j]:
+            #print(lines[x])
+            hittade = True
+            break
+    if hittade is False:
+        print(lines[x])
+
+print("hittade inget fel") 
+
+
+import os
+path = "data//UFC//training//frames"
+#"dataset\adoc\Normal\01"
+folders = os.listdir(path)
+for folder in folders:
+    files = os.listdir(os.path.join(path,folder))
+    for file in files:
+        name = int(file.split('.')[0])
+        
+        cur = os.path.join(path,folder,file)
+        if (os.path.exists(cur)):
+            name = str("%05d" % name)
+            #dest = "../Datasets/Adoc/videos/Day1/testing/part3/" + str(name) + ".jpg"
+            dest = os.path.join(path,folder,name +".jpg",)
+            os.rename(cur,dest)
+"""
 

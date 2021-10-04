@@ -1,0 +1,19 @@
+The directory is structured as follows:
+
+-Txt_annotations: Folder with annotations in txt format;
+
+-Test_split_AD.txt: IDs of clips used as training data in our experiments;
+
+-Train_split_AD.txt: IDs of clips used as testing data in our experiments;
+
+-Videos_from_UCFCrime.txt: IDs of clips we have selected from UCFCrime dataset.
+
+Each video ID is composed by its action label (e.g. 'Arrest' or 'Burglary' and a unique number). We encourage to download the videos directly from UCFCrime website.
+
+Annotations are compliant to Vatic format, described in the corresponding repository.
+
+If you use our annotations in your research, please cite our work:
+"Anomaly Locality in Video Surveillance" - Federico Landi; Cees G.M Snoek; Rita Cucchiara.
+http://imagelab.ing.unimore.it/UCFCrime2Local
+
+For any further information, please contact the first author. 
