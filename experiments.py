@@ -109,8 +109,87 @@ for x in range(len(lines)):
 print("hittade inget fel") 
 
 
+
+"""
+
 import os
-path = "data//UFC//training//frames"
+import numpy as np
+from pathlib import *
+
+etiketter = list()
+path = "data//UFC//testing"
+träningsEttiketer = (x for x in Path(path).iterdir() if x.is_file())
+for ettiket in träningsEttiketer:
+    etiketter.append(np.load(ettiket))
+
+i = 0
+j = 0
+
+bilder = list()
+bildmappar = list()
+for folder in os.listdir("data//UFC//testing//frames"):
+    path = os.path.join("data//UFC//testing//frames",folder)
+    bildmappar.append(folder)
+    for img in os.listdir(path):
+        bild = os.path.join(path,img)
+        bilder.append(bild)
+        i += 1
+    if i != len(etiketter[j]):
+        print(str("Name:%s i = %i, etiketter = %i" % (bildmappar[j],i,  len(etiketter[j]) )))
+        
+    j += 1
+    i = 0
+    
+
+
+etiketter = np.concatenate(etiketter,axis=0)
+
+if len(bilder) != len(etiketter):
+    print("något gått fel")
+
+
+
+model.add(keras.layers.Conv2D(input_shape =(240, 320, 3),activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.MaxPooling2D(pool_size=(2,2)))
+#model.add(keras.layers.BatchNormalization())
+
+model.add(keras.layers.Conv2D(activation="relu",filters=128,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=128,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=128,kernel_size=3,padding="same"))
+model.add(keras.layers.MaxPooling2D(pool_size=(2,2)))
+#model.add(keras.layers.BatchNormalization())
+
+model.add(keras.layers.Conv2D(activation="relu",filters=256,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=256,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=256,kernel_size=3,padding="same"))
+model.add(keras.layers.MaxPooling2D(pool_size=(2,2)))
+#model.add(keras.layers.BatchNormalization())
+
+model.add(keras.layers.Conv2D(activation="relu",filters=512,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=512,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=512,kernel_size=3,padding="same"))
+model.add(keras.layers.MaxPooling2D(pool_size=(2,2)))
+#model.add(keras.layers.BatchNormalization())
+
+model.add(keras.layers.Conv2D(activation="relu",filters=512,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=512,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=512,kernel_size=3,padding="same"))
+model.add(keras.layers.MaxPooling2D(pool_size=(2,2)))
+#model.add(keras.layers.BatchNormalization())
+
+model.add(keras.layers.Dense(128,activation="relu"))
+#model.add(keras.layers.GlobalAveragePooling3D())
+model.add(keras.layers.Flatten())
+model.add(keras.layers.Dense(1028,activation="relu"))
+model.add(keras.layers.Dense(64,activation="relu"))
+#model.add(keras.layers.Dense(10,activation="relu"))
+model.add(keras.layers.Dense(1,activation="sigmoid"))
+
+
+import os
+path = "data//UFC//testing//frames"
 #"dataset\adoc\Normal\01"
 folders = os.listdir(path)
 for folder in folders:
@@ -124,5 +203,80 @@ for folder in folders:
             #dest = "../Datasets/Adoc/videos/Day1/testing/part3/" + str(name) + ".jpg"
             dest = os.path.join(path,folder,name +".jpg",)
             os.rename(cur,dest)
-"""
 
+
+
+def data_generator():
+    while 1:
+        for i in range(0,len(X_train),batch_size):
+            batch_samples = X_train[i:i+batch_size]
+            batch_labels = Y_train[i:i+batch_size]
+            x_input = []
+            y_output = []
+            for j in range(len(batch_samples)):
+                bild = cv2.imread(batch_samples[j])
+                #bild = cv2.resize(bild,(360,240))
+                x_input.append(bild)
+                y_output.append(batch_labels[j])
+            x_input = np.array(x_input)
+            #x_input = x_input.reshape(x_input.shape[0],x_input.shape[1],x_input.shape[2],x_input.shape[3],1)
+            x_input = x_input.astype('float32') / 255
+            y_output = np.array(y_output)
+            yield x_input, y_output
+
+def test_generator():
+    while 1:
+        for i in range(0,len(test_bilder),batch_size):
+            batch_samples = test_bilder[i:i+batch_size]
+            batch_labels = test_etiketter[i:i+batch_size]
+            x_input = []
+            y_output = []
+            for j in range(len(batch_samples)):
+                bild = cv2.imread(batch_samples[j])
+                #bild = cv2.resize(bild,(360,240))
+                x_input.append(bild)
+                y_output.append(batch_labels[j])
+            x_input = np.array(x_input)
+            #x_input = x_input.reshape(x_input.shape[0],x_input.shape[1],x_input.shape[2],x_input.shape[3],1)
+            x_input = x_input.astype('float32') / 255
+            y_output = np.array(y_output)
+            yield x_input, y_output
+        #del batch_labels,batch_samples,x_input,y_output
+#var1, var2 = data_generator()
+#labels = np.reshape(labels,labels.shape[1])
+
+genObject = data_generator()
+testGenObject = test_generator()
+
+""" for i in range(len(X_test)):
+    X_test[i] = cv2.imread(X_test[i])
+    X_test[i] = cv2.resize(X_test[i],(360 ,240))
+X_test = np.array(X_test)
+#X_test =  X_test.reshape(X_test.shape[0],X_test.shape[1],X_test.shape[2],X_test.shape[3],1)
+X_test = X_test.astype('float32') / 255 """
+
+model.add(keras.layers.Conv2D(input_shape =(240, 320, 3),activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Conv2D(activation="relu",filters=64,kernel_size=3,padding="same"))
+model.add(keras.layers.Dense(10,activation="relu"))
+model.add(keras.layers.Dense(1,activation="relu"))
+#model.add(keras.layers.GlobalAveragePooling2D())
+model.add(keras.layers.Flatten())
+model.add(keras.layers.Dense(256,activation="relu"))
+model.add(keras.layers.Dense(64,activation="relu"))
+#model.add(keras.layers.Dense(10,activation="relu"))
+model.add(keras.layers.Dense(1,activation="sigmoid"))
