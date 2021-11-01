@@ -19,6 +19,24 @@ class Dataloader(Sequence):
         return math.ceil(len(self.x) / self.batch_size)
 
 
+
+    def createStacks(self,batch_x,batch_y,j):
+        train_X = list()
+        train_y = list()
+        
+        for i in range(self.batch_size- j):
+            train_X.append(batch_x[i:i + self.batch_size])
+            train_y.append(batch_y[i + self.batch_size])
+        for k in range(j):
+            train_X.append(batch_x[len(batch_x)-j])
+            train_y.append(batch_y[len(batch_y)-j])
+        train_X = np.array(train_X)
+        train_X = train_X.reshape(train_X.shape[0],train_X.shape[2],train_X.shape[3],train_X.shape[4],train_X.shape[1])
+        train_X = train_X.astype("float32") / 255
+        return train_X,np.array(train_y)
+
+
+
     def __getitem__(self, idx):
         inds = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
         #batch_x = self.x[inds]
@@ -30,10 +48,10 @@ class Dataloader(Sequence):
         batch_x = batch_x.astype("float32") / 255
         
         batch_x = batch_x.reshape(batch_x.shape[0],batch_x.shape[1],batch_x.shape[2],batch_x.shape[3],1)
-        batch_y = np.array(batch_y)
+        batch_y = np.array(batch_y) 
         return batch_x, batch_y
 
 
-    def on_epoch_end(self):
-        gc.collect()
+    def on_epoch_end(self) -> None:
+        #gc.collect()
         np.random.shuffle(self.indices)

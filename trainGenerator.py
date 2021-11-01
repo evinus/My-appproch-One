@@ -19,6 +19,8 @@ from pathlib import *
 import pickle
 from tensorflow import device
 from utils import Dataloader
+from tensorflow.keras.utils import plot_model
+
 
 import gc
 #gc.enable()
@@ -37,12 +39,14 @@ def LoadTrainTestData():
         for img in os.listdir(path):
             bild = os.path.join(path,img)
             bilder.append(bild)
+        
 
     etiketter = list()
     path = "data//UFC//training"
     träningsEttiketer = (x for x in Path(path).iterdir() if x.is_file())
     for ettiket in träningsEttiketer:
         etiketter.append(np.load(ettiket))
+        
 
     etiketter = np.concatenate(etiketter,axis=0)
     #labels = np.load("data/frame_labels_avenue.npy")
@@ -57,6 +61,7 @@ def LoadTrainTestData():
         for img in os.listdir(path):
             bild = os.path.join(path,img)
             test_bilder.append(bild)
+        
 
 
     test_etiketter = list()
@@ -64,6 +69,7 @@ def LoadTrainTestData():
     testnings_ettiketter = (x for x in Path(path).iterdir() if x.is_file())
     for ettiket in testnings_ettiketter:
         test_etiketter.append(np.load(ettiket))
+        
 
     test_etiketter = np.concatenate(test_etiketter,axis=0)
     return bilder,etiketter,test_bilder,test_etiketter
@@ -125,8 +131,8 @@ def CreateModel():
 if __name__ == "__main__":
     
     batch_size = 16
-    #model = CreateModel()
-    model = keras.models.load_model("modelUFC3D-ep001-loss0.482.h5-val_loss0.502.h5")
+    model = CreateModel()
+    #model = keras.models.load_model("modelUFC3D-ep001-loss0.482.h5-val_loss0.502.h5")
     bilder, etiketter, test_bilder, test_etiketter = LoadTrainTestData()
     
     train_gen = Dataloader(bilder,etiketter,batch_size)
@@ -137,26 +143,28 @@ if __name__ == "__main__":
     validation_steps =math.ceil( len(test_bilder) / batch_size)
 
     #model.compile(optimizer="adam",metrics=["acc",met.f1_m,met.precision_m,met.recall_m],loss="binary_crossentropy")
-    #model.compile(optimizer="adam",metrics=["binary_accuracy","AUC","Precision","Recall","TruePositives","TrueNegatives","FalsePositives","FalseNegatives"],loss="binary_crossentropy")
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0001),metrics=["binary_accuracy","AUC","Precision","Recall","TruePositives","TrueNegatives","FalsePositives","FalseNegatives"],loss="binary_crossentropy")
     model.summary()
-    filepath = 'modelUFC3D-ep{epoch:03d}-loss{loss:.3f}.h5-val_loss{val_loss:.3f}.h5'
-    callbacks = [keras.callbacks.EarlyStopping(monitor="val_loss", patience=5, mode="min"),keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, mode='min')]
+    plot_model(model,show_shapes=True,show_layer_names=False)
+    quit()
+    filepath = 'modelUFC3D_2-ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.tf'
+    callbacks = [keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, mode="min"),keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, mode='min')]
 
-    history = model.fit(train_gen,verbose=1,epochs=20,steps_per_epoch=train_steps,callbacks=callbacks,validation_data=test_gen,validation_steps=validation_steps,initial_epoch=2)#,validation_data=(X_test,Y_test))
-    model.save("modelUFC3D_tf",save_format='tf')
+    history = model.fit(train_gen,verbose=1,epochs=20,steps_per_epoch=train_steps,callbacks=callbacks,validation_data=test_gen,validation_steps=validation_steps)#,validation_data=(X_test,Y_test))
+    model.save("modelUFC3D_1",save_format='tf')
     with open("history1.pk","wb") as handle:
         pickle.dump(history.history,handle)
 
-    reconstructed_model = keras.models.load_model("modelUFC3D.h5")
+    reconstructed_model = keras.models.load_model("modelUFC3D_1")
 
     np.testing.assert_allclose(model.predict(test_gen,steps=validation_steps), reconstructed_model.predict(test_gen,steps=validation_steps))
     np.testing.assert_allclose(model.evaluate(test_gen,steps=validation_steps), reconstructed_model.evaluate(test_gen,steps=validation_steps))
     model.evaluate(test_gen,steps=validation_steps,verbose=1)
 
 
-    y_score = model.predict(test_gen,steps=validation_steps)
+    #y_score = model.predict(test_gen,steps=validation_steps)
 
-    auc = roc_auc_score(test_etiketter,y_score=y_score)
+    #auc = roc_auc_score(test_etiketter,y_score=y_score)
 
-    print('AUC: ', auc*100, '%')
+    #print('AUC: ', auc*100, '%')
 
