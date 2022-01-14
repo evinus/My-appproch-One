@@ -14,44 +14,67 @@ class Dataloader(Sequence):
         self.x, self.y = x_set, y_set
         self.batch_size = batch_size
         self.indices = np.arange(len(self.x))
-
+        self.längd = len(self.x)
+        self.antalPositiva = 0
     def __len__(self):
         return math.ceil(len(self.x) / self.batch_size)
 
 
 
-    def createStacks(self,batch_x,batch_y,j):
+    def createStacks(self,batch_x,batch_y,j,index):
         train_X = list()
         train_y = list()
-        
-        for i in range(self.batch_size- j):
-            train_X.append(batch_x[i:i + self.batch_size])
-            train_y.append(batch_y[i + self.batch_size])
-        for k in range(j):
-            train_X.append(batch_x[len(batch_x)-j])
-            train_y.append(batch_y[len(batch_y)-j])
+        sista = len(batch_x)
+        if j == 0:
+            for i in range(self.batch_size):
+                train_X.append(batch_x[i:i + self.batch_size])
+                train_y.append(batch_y[i + self.batch_size])
+        else:
+            for i in range(self.batch_size):
+                if(i < (32 - j - 16)):
+                    train_X.append(batch_x[i:i + self.batch_size])
+                    train_y.append(batch_y[i + self.batch_size])
+                else:
+                    clip_x = list()
+                    for k in range(self.batch_size):
+                        clip_x.append(batch_x[sista - 1])
+                    train_X.append(clip_x)
+                    train_y.append(batch_y[sista - 1])
         train_X = np.array(train_X)
+        #if train_X.shape != (16,16,240,320,3):
+        #    print(train_X.shape)
         train_X = train_X.reshape(train_X.shape[0],train_X.shape[2],train_X.shape[3],train_X.shape[4],train_X.shape[1])
         train_X = train_X.astype("float32") / 255
-        return train_X,np.array(train_y)
+        train_y = np.array(train_y)
+        #if train_y.max == 1:
+        #    print(1)
+        return train_X, train_y
 
-
-
-    def __getitem__(self, idx):
-        inds = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
-        #batch_x = self.x[inds]
-        #batch_y = self.y[inds]
-        batch_x = [self.x[index] for index in inds]
-        batch_y = [self.y[index] for index in inds]
+    def __getitem__(self, index):
+        #längd =len(self) - 2
+        #index = längd
+        #längd2 =
+        i = (index + 2) * self.batch_size
+        #l = (längd2 + 2) * self.batch_size
+        #k = längd * self.batch_size
+        j = 0
+        if i > (self.längd -2):
+            j = i - len(self.x)
+            #print(j)
+            #print(index)
+        batch_x = self.x[index * self.batch_size:(index + 2) * self.batch_size - j]
+        batch_y = self.y[index * self.batch_size:(index + 2) * self.batch_size - j]
         batch_x = np.array([cv2.imread(file_name)
-            for file_name in batch_x])
-        batch_x = batch_x.astype("float32") / 255
-        
-        batch_x = batch_x.reshape(batch_x.shape[0],batch_x.shape[1],batch_x.shape[2],batch_x.shape[3],1)
-        batch_y = np.array(batch_y) 
+               for file_name in batch_x])
+        batch_y = np.array(batch_y)
+        #if(batch_y.max == 1):
+        #    self.antalPositiva += 1
+        batch_x,batch_y = self.createStacks(batch_x,batch_y,j,i)
         return batch_x, batch_y
+   
+   
 
 
-    def on_epoch_end(self) -> None:
+    #def on_epoch_end(self) -> None:
         #gc.collect()
-        np.random.shuffle(self.indices)
+        #np.random.shuffle(self.indices)

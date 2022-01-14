@@ -22,7 +22,7 @@ from utils import Dataloader
 from tensorflow.keras.utils import plot_model
 
 
-import gc
+#import gc
 #gc.enable()
 #gc.set_debug(gc.DEBUG_LEAK)
 #tf.compat.v1.disable_eager_execution()
@@ -57,7 +57,7 @@ def LoadTrainTestData():
 
     for folder in os.listdir("data//UFC//testing//frames"):
         path = os.path.join("data//UFC//testing//frames",folder)
-    #bildmappar.append(folder)
+        #bildmappar.append(folder)
         for img in os.listdir(path):
             bild = os.path.join(path,img)
             test_bilder.append(bild)
@@ -75,50 +75,75 @@ def LoadTrainTestData():
     return bilder,etiketter,test_bilder,test_etiketter
 
 
+def LoadTrainAvenueData():
+    bilder = list()
+    bildmappar = list()
+    for folder in os.listdir("data//avenue//testing//frames"):
+        path = os.path.join("data//avenue//testing//frames",folder)
+        bildmappar.append(folder)
+        for img in os.listdir(path):
+            bild = os.path.join(path,img)
+            bilder.append(bild)
 
+    labels = np.load("data/frame_labels_avenue.npy")
+    labels = np.reshape(labels,(labels.shape[1]))
+    X_train, X_test, Y_train, Y_test = train_test_split(bilder,labels,test_size=0.2, random_state= 100)
 
+    return X_train,Y_train,X_test,Y_test
 
 
 def CreateModel():
     model = keras.Sequential()
 
-    model.add(keras.layers.Conv3D(input_shape =(240, 320, 3, 1),activation="relu",filters=64,kernel_size=3,padding="same"))
-    model.add(keras.layers.BatchNormalization())
-    model.add(keras.layers.Conv3D(activation="relu",filters=64,kernel_size=3,padding="same"))
-    model.add(keras.layers.BatchNormalization())
+    model.add(keras.layers.Conv3D(input_shape =(240, 320, 3, 16),activation="relu",filters=10,kernel_size=3,padding="same"))
+    model.add(keras.layers.SpatialDropout3D(0.7))
+    #model.add(keras.layers.BatchNormalization())
+    #model.add(keras.layers.Conv3D(activation="relu",filters=64,kernel_size=3,padding="same"))
+    #model.add(keras.layers.BatchNormalization())
     #model.add(keras.layers.Conv3D(activation="relu",filters=64,kernel_size=3,padding="same"))
     model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
 
-    model.add(keras.layers.Conv3D(activation="relu",filters=128,kernel_size=3,padding="same"))
+    model.add(keras.layers.Conv3D(activation="relu",filters=20,kernel_size=3,padding="same"))
+    model.add(keras.layers.SpatialDropout3D(0.7))
     #model.add(keras.layers.Conv3D(activation="relu",filters=128,kernel_size=3,padding="same"))
     #model.add(keras.layers.Conv3D(activation="relu",filters=128,kernel_size=3,padding="same"))
-    model.add(keras.layers.BatchNormalization())
+    #model.add(keras.layers.BatchNormalization())
     model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
 
-    model.add(keras.layers.Conv3D(activation="relu",filters=256,kernel_size=3,padding="same"))
-    #model.add(keras.layers.Conv3D(activation="relu",filters=256,kernel_size=3,padding="same"))
-    #model.add(keras.layers.Conv3D(activation="relu",filters=256,kernel_size=3,padding="same"))
-    model.add(keras.layers.BatchNormalization())
+    model.add(keras.layers.Conv3D(activation="relu",filters=20,kernel_size=3,padding="same"))
+    model.add(keras.layers.SpatialDropout3D(0.7))
     model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
 
-    model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
-    #model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
-    #model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
-    model.add(keras.layers.BatchNormalization())
+    model.add(keras.layers.Conv3D(activation="relu",filters=20,kernel_size=3,padding="same"))
+    model.add(keras.layers.SpatialDropout3D(0.7))
     model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
 
-    model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
-    #model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
-    #model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
-    model.add(keras.layers.BatchNormalization())
-    model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
+    #model.add(keras.layers.Conv3D(activation="relu",filters=18,kernel_size=3,padding="same"))
+    #model.add(keras.layers.SpatialDropout3D(0.6))
+    #model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
 
-    model.add(keras.layers.Dense(128,activation="relu"))
+    #model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
+    #model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
+    #model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
+    #model.add(keras.layers.BatchNormalization())
+    #model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
+
+    #model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
+    #model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
+    #model.add(keras.layers.Conv3D(activation="relu",filters=512,kernel_size=3,padding="same"))
+    #model.add(keras.layers.BatchNormalization())
+    #model.add(keras.layers.MaxPooling3D(pool_size=(2,2,1)))
+
+    #model.add(keras.layers.Dense(5,activation="relu"))
     #model.add(keras.layers.GlobalAveragePooling3D())
     model.add(keras.layers.Flatten())
-    model.add(keras.layers.Dense(1028,activation="relu"))
-    model.add(keras.layers.Dense(64,activation="relu"))
-    #model.add(keras.layers.Dense(10,activation="relu"))
+    #model.add(keras.layers.Dropout(0.5))
+    model.add(keras.layers.Dense(1000,activation="relu"))
+    model.add(keras.layers.Dropout(0.6))
+    model.add(keras.layers.Dense(100,activation="relu"))
+    model.add(keras.layers.Dropout(0.6))
+    model.add(keras.layers.Dense(10,activation="relu"))
+    model.add(keras.layers.Dropout(0.2))
     model.add(keras.layers.Dense(1,activation="sigmoid"))
     return model
 
@@ -131,10 +156,11 @@ def CreateModel():
 if __name__ == "__main__":
     
     batch_size = 16
-    model = CreateModel()
+    #model = CreateModel()
+    model = keras.models.load_model("modelUCFLocal5")
     #model = keras.models.load_model("modelUFC3D-ep001-loss0.482.h5-val_loss0.502.h5")
     bilder, etiketter, test_bilder, test_etiketter = LoadTrainTestData()
-    
+    #bilder, etiketter, test_bilder, test_etiketter = LoadTrainAvenueData()
     train_gen = Dataloader(bilder,etiketter,batch_size)
 
     test_gen = Dataloader(test_bilder,test_etiketter,batch_size)
@@ -143,19 +169,21 @@ if __name__ == "__main__":
     validation_steps =math.ceil( len(test_bilder) / batch_size)
 
     #model.compile(optimizer="adam",metrics=["acc",met.f1_m,met.precision_m,met.recall_m],loss="binary_crossentropy")
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0001),metrics=["binary_accuracy","AUC","Precision","Recall","TruePositives","TrueNegatives","FalsePositives","FalseNegatives"],loss="binary_crossentropy")
+    #model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.00001),metrics=["binary_accuracy","AUC","Precision","Recall","TruePositives","TrueNegatives","FalsePositives","FalseNegatives"],loss="binary_crossentropy")
+    #model.run_eagerly = True
     model.summary()
     plot_model(model,show_shapes=True,show_layer_names=False)
-    quit()
-    filepath = 'modelUFC3D_2-ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.tf'
-    callbacks = [keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, mode="min"),keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, mode='min')]
+    #quit()
+    filepath = 'modelAvenue-ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.tf'
+    #callbacks = [keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')]#keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, mode="min")
 
-    history = model.fit(train_gen,verbose=1,epochs=20,steps_per_epoch=train_steps,callbacks=callbacks,validation_data=test_gen,validation_steps=validation_steps)#,validation_data=(X_test,Y_test))
-    model.save("modelUFC3D_1",save_format='tf')
-    with open("history1.pk","wb") as handle:
-        pickle.dump(history.history,handle)
+    #history = model.fit(train_gen,verbose=1,epochs=20,steps_per_epoch=train_steps,callbacks=callbacks,validation_data=test_gen,validation_steps=validation_steps,workers=16,max_queue_size=15)#,validation_data=(X_test,Y_test))
+    model.fit(train_gen,verbose=1,epochs=5,steps_per_epoch=train_steps,workers=16,max_queue_size=15)#,validation_data=(X_test,Y_test))
+    model.save("modelUCFLocal5",save_format='tf')
+    #with open("historyAv.pk","wb") as handle:
+    #    pickle.dump(history.history,handle)
 
-    reconstructed_model = keras.models.load_model("modelUFC3D_1")
+    reconstructed_model = keras.models.load_model("modelUCFLocal5")
 
     np.testing.assert_allclose(model.predict(test_gen,steps=validation_steps), reconstructed_model.predict(test_gen,steps=validation_steps))
     np.testing.assert_allclose(model.evaluate(test_gen,steps=validation_steps), reconstructed_model.evaluate(test_gen,steps=validation_steps))
